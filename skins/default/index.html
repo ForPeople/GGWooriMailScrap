@@ -1,0 +1,22 @@
+{@
+	header("Content-Type:text/html;charset=UTF-8");
+}
+<!--@if($module_info->module == 'board')-->
+{@
+	$oDocumentModel = getModel('document');
+	$document = $oDocumentModel->getDocument(Context::get('document_srl'));
+}
+<!--@elseif($module_info->module == 'page')-->
+{@
+	$oDocumentModel = getModel('document');
+	$oDocument = $oDocumentModel->getDocumentList($module_info);
+	$document = $oDocument->data[1];
+}
+<!--@end-->
+
+  <form action="" method="post">
+  	<input type="hidden" name="mid" value="{Context::get('mid')}" />
+  	<input type="hidden" name="document_srl" value="{$document->variables['document_srl']}" />
+  	<input type="hidden" name="ggtype" value="ggwoorimailscrap" />
+    <button class="btn" onclick="javascript:if(confirm('게시물을 스크랩하여 이메일로 전송하시겠습니까?')) submit(); else return false;">스크랩 이메일</button>
+  </form>
