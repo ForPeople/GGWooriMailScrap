@@ -9,7 +9,7 @@
 		GG WooriMail Scrap
 	</description>
 	
-	<version>0.2</version>
+	<version>0.3</version>
 	<date>2015-12-10</date>
 	<license xml:lang="ko">GPL</license>
 	<link>http://xeadmin.com</link>
@@ -56,7 +56,16 @@
 				<title xml:lang="en">right</title>
 			</options>
 		</var>
-		
+		<var name="w_ssl" type="select">
+			<title xml:lang="ko">SSL 전송 여부</title>
+			<options value="Y">
+				<title xml:lang="ko">SSL 전송(20080포트)</title>
+			</options>
+			<options value="N">
+				<title xml:lang="ko">SSL 전송 안함(80포트)</title>
+			</options>
+			<description xml:lang="ko">SSL 전송시 20080 포트가 허용되지 않아 에러가 나는 경우 SSL 전송 안함으로 설정하세요.</description>
+		</var>
 		<var name="w_authkey">
 			<title xml:lang="ko">우리메일 인증키</title>
 			<description xml:lang="ko">발급처 : 우리메일 ( http://woorimail.com )</description>

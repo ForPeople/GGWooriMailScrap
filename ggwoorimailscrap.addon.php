@@ -8,12 +8,13 @@ if(!defined("__ZBXE__") && !defined("__XE__")) exit();
 **/
 
 if(Context::get('act') == 'dispBoardWrite') return;
+if(Context::get('act') == 'dispPageAdminContentModify') return;
 if(!Context::get('logged_info')) return;
 
 $module_info = Context::get('module_info');
 $oDocumentModel = getModel('document');
 
-if(($module_info->module == 'board' || $module_info->module == 'page')) {
+if($called_position == 'before_display_content') {
 	if(!$addon_info->text_align) $addon_info->text_align = 'left';
 
 	Context::set('module_info',$module_info);
@@ -22,41 +23,39 @@ if(($module_info->module == 'board' || $module_info->module == 'page')) {
 	$logged_info = Context::get('logged_info');
 	Context::set('logged_info',$logged_info);
 	$addon_info->gg_skin = $addon_info->gg_skin ? $addon_info->gg_skin : 'default';
+
+	if($module_info->module == 'board' && Context::get('document_srl')) {
+		$oDocument = $oDocumentModel->getDocument(Context::get('document_srl'));
+		$scrap_output = $oDocument->variables['content'];
+	}
+	if($module_info->module == 'page') {
+		$oDocument = $oDocumentModel->getDocumentList($module_info);
+		$oDocument = $oDocument->data[1];
+		$scrap_output = $oDocument->variables['content'];
+	}
+
 	$oTemplate = new TemplateHandler();
 	$template_btn_text = $oTemplate->compile('./addons/ggwoorimailscrap/skins/'.$addon_info->gg_skin, 'index');
 	$btn_text = '<div style=text-align:'.$addon_info->text_align.';width:100%;height:50px;z-index:99999;>'.$template_btn_text.'</div>';
-}
 
-if($called_position == 'after_module_proc' && $module_info->module == 'board' && Context::get('document_srl')) {
-	$oDocument = $oDocumentModel->getDocument(Context::get('document_srl'));
 	$ggoutput = new stdClass();
 
-	if($addon_info->text_position == 'top') $ggoutput = $btn_text.$oDocument->variables['content'];
+	if($addon_info->text_position == 'top') $ggoutput = str_replace($scrap_output, $btn_text.$scrap_output, $output);
+	else $ggoutput = str_replace($scrap_output, $scrap_output.$btn_text, $output);
 
-	else $ggoutput = $oDocument->variables['content'].$btn_text;
-
-	$oDocument->variables['content'] = $ggoutput;
-
-} elseif($called_position == 'before_display_content' && $module_info->module == 'page') {
-	$oDocument = $oDocumentModel->getDocumentList($module_info);
-	$oDocument = $oDocument->data[1];
-	
-	if($addon_info->text_position == 'top') $output = str_replace($oDocument->variables['content'], $btn_text.$oDocument->variables['content'], $output);
-
-	else $output = str_replace($oDocument->variables['content'], $oDocument->variables['content'].$btn_text, $output);
+	$output = $ggoutput;
 }
 
 if($called_position == 'before_display_content' && Context::get('ggtype') == 'ggwoorimailscrap') {
 	$config = new stdClass();
 	$config->w_serv_url = 'woorimail.com'; 
-	$config->w_ssl = 'Y'; 
+	$config->w_ssl = $addon_info->w_ssl; 
 	$config->w_ssl_port = '20080'; 
 	$config->w_authkey = $addon_info->w_authkey; 
 	$config->w_domain = $addon_info->w_domain;
 
-	$ggDocument = $oDocumentModel->getDocument(Context::get('document_srl'));
-	$title = $ggDocument->variables['title'];
-	$content = $ggDocument->variables['content'];
+	$title = $oDocument->variables['title'];
+	$content = $scrap_output;
 
 	$config->w_title = $title ? $title : '제목이 없습니다.'; 
 	$config->w_title = '[스크랩] '.$config->w_title;
@@ -100,10 +99,9 @@ if($called_position == 'before_display_content' && Context::get('ggtype') == 'gg
 	{
 		$w_ssl = 'https://'; 
 		$w_ssl_port = ':' . $config->w_ssl_port; 
-		 
-		$url = $w_ssl . $w_serv_url . $w_ssl_port . '/index.php';
 	}
-	
+
+	$url = $w_ssl . $w_serv_url . $w_ssl_port . '/index.php';	
 	$post_data = array(
 		'act' => $config->w_act,
 		'authkey' => $config->w_authkey,
@@ -135,7 +133,7 @@ if($called_position == 'before_display_content' && Context::get('ggtype') == 'gg
 	 
 	$response = curl_exec($ch);
 	curl_close($ch);
-	//debugPrint($response);
+	//debugPrint('');
 
 	$ggjson = json_decode($response);
 	$returnUrl = getNotEncodedUrl('', 'mid', Context::get('mid'), 'document_srl', Context::get('document_srl'));
