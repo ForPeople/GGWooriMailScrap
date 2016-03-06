@@ -49,7 +49,7 @@ if($called_position == 'after_module_proc' && $module_info->module == 'board' &&
 if($called_position == 'before_display_content' && Context::get('ggtype') == 'ggwoorimailscrap') {
 	$config = new stdClass();
 	$config->w_serv_url = 'woorimail.com'; 
-	$config->w_ssl = 'Y'; 
+	$config->w_ssl = $addon_info->w_ssl; 
 	$config->w_ssl_port = '20080'; 
 	$config->w_authkey = $addon_info->w_authkey; 
 	$config->w_domain = $addon_info->w_domain;
@@ -100,10 +100,9 @@ if($called_position == 'before_display_content' && Context::get('ggtype') == 'gg
 	{
 		$w_ssl = 'https://'; 
 		$w_ssl_port = ':' . $config->w_ssl_port; 
-		 
-		$url = $w_ssl . $w_serv_url . $w_ssl_port . '/index.php';
 	}
-	
+
+	$url = $w_ssl . $w_serv_url . $w_ssl_port . '/index.php';	
 	$post_data = array(
 		'act' => $config->w_act,
 		'authkey' => $config->w_authkey,
@@ -135,7 +134,7 @@ if($called_position == 'before_display_content' && Context::get('ggtype') == 'gg
 	 
 	$response = curl_exec($ch);
 	curl_close($ch);
-	//debugPrint($response);
+	//debugPrint('');
 
 	$ggjson = json_decode($response);
 	$returnUrl = getNotEncodedUrl('', 'mid', Context::get('mid'), 'document_srl', Context::get('document_srl'));
